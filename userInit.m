@@ -3,73 +3,193 @@
 % User initialization function
 
 function userStructure = userInit(model, environment)
+    
+    % Precision of the map (higher = better precision but slower) [note: only integers]
+    precision = 5;
 
     userStructure.exampleVariable = 0;
     userStructure.exampleRowVector = [1,2,3];
     userStructure.exampleColumnVector = [1;2;3];
     userStructure.exampleMatrix = [1,2;3,4];
     
-    startx = environment.plotArea(1);
-    endx = environment.plotArea(2);
+    % Delimitation of the map
+    mapStartx = environment.plotArea(1);
+    mapEndx = environment.plotArea(2);
+    mapStarty = environment.plotArea(3);
+    mapEndy = environment.plotArea(4);
     
-    starty = environment.plotArea(3);
-    endy = environment.plotArea(4);
+    % Size of the array that will contain the map
+    sizeMapx = (mapEndx-mapStartx)*precision;
+    sizeMapy = (mapEndy-mapStarty)*precision;
     
-    userStructure.minWeight = 0;
-    startPoint = model.state(1, 1:2)'; %first two values of model.state, same shit as model.state(1:2)' 
+    % Coordinates of the start point and goal point
+    startPoint = model.state(1, 1:2)';
     goal = environment.stateGoal(1, 1:2)';
     
-    adderx = startx;
-    addery = starty;
+    % Converts the above coordinates into map friendly values
+    startx = (startPoint(1) - mapStartx) * precision;
+    starty = (startPoint(2) - mapStarty)*precision;
+    goalx = (goal(1) - mapStartx) * precision;
+    goaly = (goal(2) - mapStarty)*precision;
     
-    sizeSample = 10;
+    % Coordinates of the beginning of the map (for display purposes)
+    adderx = mapStartx;
+    addery = mapStarty;
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %                                %
+    %             MAPPING            %
+    %                                %
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     
     %generates a map with the obstacles and takes into account the robot's
     %size (radius)
     
-    for i = 1:(endx-startx)*sizeSample
-        for j = 1:(endy-starty)*sizeSample
-            
-            coord = [startx+i/sizeSample,starty+j/sizeSample]';
+    userStructure.cost = zeros(sizeMapx, sizeMapy, 3);
+    userStructure.cost(:,:,:) = -1;
+    userStructure.cost(startx, starty, 3) = 0;
+    
+    %Fill the map with 1 as empty and Inf as obstacle
+    for i = 1:sizeMapx
+        for j = 1:sizeMapy
+
+            coord = [mapStartx+i/precision,mapStarty+j/precision]';
             
             if (checkObstacle(coord, model, environment) == 1)
                 userStructure.map(i,j) = Inf;
-            
             else 
                 userStructure.map(i,j) = 1;
             end
-            
        end
     end
     
-   % userStructure.map(goal) = 0;
+    %Make sure that the goal is not an obstacle
+    userStructure.map(goalx,goaly) = 1;
+    
+    %Parents and costs 
+    parentList = pathFinding(startx, starty, goalx, goaly,sizeMapx, sizeMapy, userStructure.map);
+    
+    disp("Total cost to goal: " + parentList(goalx,goaly,3));
+    
+%     index = 1;
+% 
+%     for i = 1:sizeMapx
+%        addery = mapStartx;
+%        for j = 1:sizeMapy
+% 
+%            if (parentList(i,j,3) ~= Inf)
+% 
+%                userStructure.x(index) = adderx;
+%                userStructure.y(index) = addery;
+%                index = index + 1;
+%            end
+% 
+%            addery = addery + 1/precision;
+%        end
+%        adderx = adderx + 1/precision;
+%    end 
    
+   userStructure.x(1) = parentList(goalx,goaly,1); userStructure.y(1) = parentList(goalx,goaly,2);
+   
+   index = 1;
+   
+   while userStructure.x(index) ~= startx || userStructure.y(index) ~= starty
+       userStructure.x(index+1) = parentList(userStructure.x(index),userStructure.y(index),1); 
+       userStructure.y(index+1) = parentList(userStructure.x(index), userStructure.y(index),2);
+       
+       index = index + 1;
+   end
+   
+   sizeArray = size(userStructure.y);
+   userStructure.minWeight = 0;
+    
+   for i = 1:sizeArray(2)
+    userStructure.x(i) = mapStartx + userStructure.x(i)/precision;
+    userStructure.y(i) = mapStarty + userStructure.y(i)/precision;
+   end
+   
+   userStructure.x = flip(userStructure.x);
+   userStructure.y = flip(userStructure.y);
+end
+
+%Actual path finding code where a 3d matrix is generated
+%dimension 1: rows
+%dimension 2: columns
+%dimension 3: property of a point -> [xparent, yparent, cost to get to that point]
+function parentList = pathFinding(sx,sy,gx,gy,sizex,sizey,map)
+    
+    %initialize the parent queue line with the starting point of the robot
+    parentx(1) = sx;
+    parenty(1) = sy;
+    
+    %generate a 3d matrix described above
+    parentList = zeros(sizex, sizey, 3);
+    parentList(:,:,:) = Inf;
+    parentList(sx, sy, 3) = 0; 
+
     index = 1;
     
-    indexX = startPoint(1);
-    indexY = startPoint(2);
+    %actual computation
+    while parentList(gx,gy,3) == Inf
+        for n = -1:1
+            childx = parentx(index)+n;
+            for m = -1:1
+                childy = parenty(index)+m;
+                
+                %if the child is not out of range and it is not an obstacle
+                if childx > 0 && childy > 0 && childx <= sizex && childy <= sizey && map(childx,childy) ~= Inf
+                    heritage = checkShortestPath(childx,childy,parentx(index),parenty(index),parentList);
+
+                    parentList(childx,childy,1) = heritage(1);
+                    parentList(childx,childy,2) = heritage(2);
+                    parentList(childx,childy,3) = heritage(3);
+                    
+                    %check if the child is already in the parent queue line
+                    isPresent = checkItem(parentx, parenty, childx, childy);
+                    
+                    if ~isPresent
+                        sizeArray = size(parentx);
+                        parentx(sizeArray(2)+1) = childx;
+                        parenty(sizeArray(2)+1) = childy;
+                    end
+                end
+            end
+        end
+        %increment the index of the parent queue line
+        index = index + 1;
+    end
+end
+
+%check whether the child is present in the queue line and returns a boolean
+function bool = checkItem(MA, MB, x, y)
+
+    sizeArray = size(MA);
+    bool = 0;
+    for i = 1:sizeArray(2)
+        if MA(i) == x && MB(i) == y
+            bool = 1;
+            return;
+        end
+    end
+end
+
+%compare the costs between the potential parent and the current parent (if
+%one) then assign the new parent if lower cost
+function heritage = checkShortestPath(cx,cy,px,py, parentList)
     
-    while (0)
-        finish_path = 1;
+    %if diagonal
+    if cx~=px && cy~=py
+        cost = parentList(px,py,3) + 1.5;
+    else
+        cost = parentList(px,py,3) + 1;
     end
     
-    index = 1;
-        
-    for i = 1:(endx-startx)*sizeSample
-       addery = startx;
-       for j = 1:(endy-starty)*sizeSample
-           
-           if (userStructure.map(i,j) ~= Inf)
-           
-           userStructure.x(index) = adderx;
-           userStructure.y(index) = addery;
-           index = index + 1;
-           end
-           
-           addery = addery + 1/sizeSample;
-       end
-       adderx = adderx + 1/sizeSample;
-    end  
+    if cost < parentList(cx,cy,3)
+       heritage = [px,py,cost];
+    else
+        heritage = [parentList(cx,cy,1),parentList(cx,cy,2),parentList(cx,cy,3)];
+    end
 end
 
 function isCollided = checkObstacle(coord, model, environment)

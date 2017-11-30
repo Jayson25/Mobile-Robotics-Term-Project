@@ -13,7 +13,7 @@ function [u, userStructure] = userCtrl(model, environment, userStructure)
     u = [0.5; -0.5];
     if(environment.time < 5)
         u = [0.2; -0.5];
-    elseif(environment.time < 15)
+    elseif(environment.time < 15) 
         u = [0; 0.5];
     else
         u = [-0.3; 0];

@@ -53,7 +53,6 @@ while(1)
     end
     sceneCnt = sceneCnt + 1;
     
-    
 end
 toc;
 
