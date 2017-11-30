@@ -10,12 +10,12 @@ function [u, userStructure] = userCtrl(model, environment, userStructure)
     userStructure.exampleVariable = userStructure.exampleVariable + 1;
     
     % control input example
-    u = [1; -1];
-%     if(environment.time < 5)
-%         u = [0.5; 0.5];
-%     elseif(environment.time < 15)
-%         u = [0.5; 0.5];
-%     else
-%         u = [0.5; 0.5];
-%     end
+    u = [0.5; -0.5];
+    if(environment.time < 5)
+        u = [0.2; -0.5];
+    elseif(environment.time < 15)
+        u = [0; 0.5];
+    else
+        u = [-0.3; 0];
+    end
 end

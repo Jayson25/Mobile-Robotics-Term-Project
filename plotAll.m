@@ -16,8 +16,12 @@ function plotAll(model, env, userStructure)
     modelGoal.state = env.stateGoal;
     drawRobotGoal(modelGoal);
     
+    scatter(userStructure.x, userStructure.y);
+    
     % draw environment
     drawEnvironment(env);
+    
+    
     
     hold off;
     axis equal;
@@ -120,6 +124,7 @@ end
 
 function drawEnvironment(env)
     envSize = size(env.corner);
+    
     for i = 1:envSize(2)
         plot([env.corner(1,i),env.corner(3,i)], [env.corner(2,i),env.corner(4,i)],'k-');
     end

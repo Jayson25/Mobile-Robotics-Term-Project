@@ -10,6 +10,9 @@ function isCollided = checkCollision(model, environment)
     for j = 1:NbOfObstacleLines
         
         currObstacleLine = environment.corner(:, j);
+        
+       % currObstacleLine
+        
         firstPointOfObstacleLine = currObstacleLine(1:2, 1);
         secondPointOfObstacleLine = currObstacleLine(3:4, 1);
         currVehiclePos =  model.state(1, 1:2)';
@@ -30,8 +33,8 @@ function isCollided = checkCollision(model, environment)
 end
 
 function [ dist ] = point_line_segment_dist( linePoint_1, linePoint_2, point )
-%POINT_LINE_SEGMENT_DIST ÀÌ ÇÔ¼öÀÇ ¿ä¾à ¼³¸í À§Ä¡
-%   ÀÚ¼¼ÇÑ ¼³¸í À§Ä¡
+%POINT_LINE_SEGMENT_DIST ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
+%   ï¿½Ú¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
 
   % Return minimum distance between line segment linePoint_1 - linePoint_2 and point
   linePointsBetweenDistanceSquared = point_dist(linePoint_1, linePoint_2)*point_dist(linePoint_1, linePoint_2);  % i.e. |w-v|^2 -  avoid a sqrt
@@ -60,8 +63,8 @@ function [ dist ] = point_line_segment_dist( linePoint_1, linePoint_2, point )
 end
 
 function [ dist ] = point_dist( point_1, point_2 )
-%POINT_DIST ÀÌ ÇÔ¼öÀÇ ¿ä¾à ¼³¸í À§Ä¡
-%   ÀÚ¼¼ÇÑ ¼³¸í À§Ä¡
+%POINT_DIST ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
+%   ï¿½Ú¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡
     dist = sqrt((point_1(1)-point_2(1))*(point_1(1)-point_2(1)) + (point_1(2)-point_2(2))*(point_1(2)-point_2(2)) );
 
 end
