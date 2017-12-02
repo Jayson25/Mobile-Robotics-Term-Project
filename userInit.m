@@ -23,12 +23,12 @@ function userStructure = userInit(model, environment)
     sizeMapy = (mapEndy-mapStarty)*precision;
     
     % Coordinates of the start point and goal point
-    startPoint = model.state(1, 1:2)';
+    userStructure.startPoint = model.state(1, 1:2)';
     goal = environment.stateGoal(1, 1:2)';
     
     % Converts the above coordinates into map friendly values
-    startx = (startPoint(1) - mapStartx) * precision;
-    starty = (startPoint(2) - mapStarty)*precision;
+    startx = (userStructure.startPoint(1) - mapStartx) * precision;
+    starty = (userStructure.startPoint(2) - mapStarty)*precision;
     goalx = (goal(1) - mapStartx) * precision;
     goaly = (goal(2) - mapStarty)*precision;
     
