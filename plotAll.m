@@ -16,7 +16,7 @@ function plotAll(model, env, userStructure)
     modelGoal.state = env.stateGoal;
     drawRobotGoal(modelGoal);
     
-    scatter(userStructure.x, userStructure.y);
+    scatter(userStructure.x, userStructure.y, 10, 'r', 'filled');
     
     % draw environment
     drawEnvironment(env);

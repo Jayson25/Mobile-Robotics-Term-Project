@@ -93,7 +93,8 @@ function userStructure = userInit(model, environment)
 %        adderx = adderx + 1/precision;
 %    end 
    
-   userStructure.x(1) = parentList(goalx,goaly,1); userStructure.y(1) = parentList(goalx,goaly,2);
+   userStructure.x(1) = parentList(goalx,goaly,1); 
+   userStructure.y(1) = parentList(goalx,goaly,2);
    
    index = 1;
    
@@ -114,6 +115,10 @@ function userStructure = userInit(model, environment)
    
    userStructure.x = flip(userStructure.x);
    userStructure.y = flip(userStructure.y);
+   
+   userStructure.checkpoint_x = userStructure.x;
+   userStructure.checkpoint_y = userStructure.y;
+   
 end
 
 %Actual path finding code where a 3d matrix is generated
@@ -162,7 +167,7 @@ function parentList = pathFinding(sx,sy,gx,gy,sizex,sizey,map)
         %increment the index of the parent queue line
         index = index + 1;
     end
-end
+end 
 
 %check whether the child is present in the queue line and returns a boolean
 function bool = checkItem(MA, MB, x, y)
@@ -255,5 +260,4 @@ end
 function [ dist ] = point_dist( point_1, point_2 )
 %POINT_DIST 
     dist = sqrt((point_1(1)-point_2(1))*(point_1(1)-point_2(1)) + (point_1(2)-point_2(2))*(point_1(2)-point_2(2)) );
-
 end
