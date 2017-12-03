@@ -1,4 +1,3 @@
-
 % Problem 1 - Round shaped differential drive robot navigation
 % User initialization function
 
@@ -6,11 +5,6 @@ function userStructure = userInit(model, environment)
     
     % Precision of the map (higher = better precision but slower) [note: only integers]
     precision = 5;
-
-    userStructure.exampleVariable = 0;
-    userStructure.exampleRowVector = [1,2,3];
-    userStructure.exampleColumnVector = [1;2;3];
-    userStructure.exampleMatrix = [1,2;3,4];
     
     % Delimitation of the map
     mapStartx = environment.plotArea(1);
@@ -38,14 +32,7 @@ function userStructure = userInit(model, environment)
     % Coordinates of the beginning of the map (for display purposes)
     adderx = mapStartx;
     addery = mapStarty;
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %                                %
-    %             MAPPING            %
-    %                                %
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-    
+        
     %generates a map with the obstacles and takes into account the robot's
     %size (radius)
     
@@ -74,28 +61,10 @@ function userStructure = userInit(model, environment)
     parentList = pathFinding(startx, starty, goalx, goaly,sizeMapx, sizeMapy, userStructure.map);
     
     disp("Total cost to goal: " + parentList(goalx,goaly,3));
-    
-%     index = 1;
-% 
-%     for i = 1:sizeMapx
-%        addery = mapStartx;
-%        for j = 1:sizeMapy
-% 
-%            if (parentList(i,j,3) ~= Inf)
-% 
-%                userStructure.x(index) = adderx;
-%                userStructure.y(index) = addery;
-%                index = index + 1;
-%            end
-% 
-%            addery = addery + 1/precision;
-%        end
-%        adderx = adderx + 1/precision;
-%    end 
    
    userStructure.x(1) = parentList(goalx,goaly,1); 
    userStructure.y(1) = parentList(goalx,goaly,2);
-   
+
    index = 1;
    
    while userStructure.x(index) ~= startx || userStructure.y(index) ~= starty
@@ -116,6 +85,8 @@ function userStructure = userInit(model, environment)
    userStructure.x = flip(userStructure.x);
    userStructure.y = flip(userStructure.y);
    
+   userStructure.checkpoint_x = userStructure.x;
+   userStructure.checkpoint_y = userStructure.y;
    userStructure.coordinates = get_direction_coordinates (userStructure.x, userStructure.y, length(userStructure.x)-1);
    userStructure.check_points = get_checkpoints (userStructure.startPoint, environment.stateGoal, userStructure.x, userStructure.y, userStructure.coordinates);
    

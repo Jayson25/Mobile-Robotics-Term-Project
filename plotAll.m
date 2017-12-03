@@ -16,12 +16,12 @@ function plotAll(model, env, userStructure)
     modelGoal.state = env.stateGoal;
     drawRobotGoal(modelGoal);
     
-    scatter(userStructure.x, userStructure.y, 10, 'r', 'filled');
+    scatter(userStructure.x, userStructure.y, 10,'red','filled');
     scatter(userStructure.check_points(1,:), userStructure.check_points(2,:), 25, 'b', 'filled');
+
+    
     % draw environment
     drawEnvironment(env);
-    
-    
     
     hold off;
     axis equal;
