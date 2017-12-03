@@ -26,6 +26,9 @@ function userStructure = userInit(model, environment)
     userStructure.startPoint = model.state(1, 1:2)';
     goal = environment.stateGoal(1, 1:2)';
     
+    % initial angle of robot
+    userStructure.startAngle = model.state(3);
+    
     % Converts the above coordinates into map friendly values
     startx = (userStructure.startPoint(1) - mapStartx) * precision;
     starty = (userStructure.startPoint(2) - mapStarty)*precision;

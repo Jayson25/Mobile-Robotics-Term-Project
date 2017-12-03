@@ -39,18 +39,34 @@ function [u, userStructure] = userCtrl(model, environment, userStructure)
 %         u = [0; 0];
 %     end
 
-%     Maybe we can combine both approaches 
+%     Maybe we can combine both approaches
 
-    startx = userStructure.startPoint(1);
-    endx = 4;
+    % module that tests translation of robot 
+%     startx = userStructure.startPoint(1);
+%     endx = 4;
+%     
+%     if model.state(1) > (endx + startx)/2 && model.state(1) < endx
+%         u = [-0.1; -0.1];
+%     elseif model.state(1) >= endx
+%         u = [model.state(4)*-1; model.state(5)*-1]; 
+%     else
+%         u = [0.1; 0.1]
+%     end
+%     u
     
-    if model.state(1) > (endx + startx)/2 && model.state(1) < endx
-        u = [-0.1; -0.1];
-    elseif model.state(1) >= endx
-        u = [model.state(4)*-1; model.state(5)*-1]; 
-    else
-        u = [0.1; 0.1]
-    end
-    u
+    % module that tests turning left of robot
+%     startAngle = userStructure.startAngle;
+%     endAngle = 6.28;
+%     if model.state(3)> (endAngle + startAngle)/2 && model.state(3) < endAngle
+%         u = [0.01; -0.01];
+%     elseif model.state(3) >= endAngle
+%         u = [model.state(4)*-1; model.state(5)*-1];
+%     else
+%         u = [-0.01; 0.01];
+%     end
+%     u
 
+    % get list of coordinates 
+    % will use "checkpoints" to move robot through the map
+    % a checkpoint is when turning of the robot is required.
 end
