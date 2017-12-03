@@ -116,9 +116,12 @@ function userStructure = userInit(model, environment)
    userStructure.x = flip(userStructure.x);
    userStructure.y = flip(userStructure.y);
    
-   userStructure.checkpoint_x = userStructure.x;
-   userStructure.checkpoint_y = userStructure.y;
+   userStructure.coordinates = get_direction_coordinates (userStructure.x, userStructure.y, length(userStructure.x)-1);
+   userStructure.check_points = get_checkpoints (userStructure.startPoint, environment.stateGoal, userStructure.x, userStructure.y, userStructure.coordinates);
    
+   %transposing coordinates and check_points
+   userStructure.coordinates = userStructure.coordinates';
+   userStructure.check_points = userStructure.check_points';
 end
 
 %Actual path finding code where a 3d matrix is generated
@@ -260,4 +263,43 @@ end
 function [ dist ] = point_dist( point_1, point_2 )
 %POINT_DIST 
     dist = sqrt((point_1(1)-point_2(1))*(point_1(1)-point_2(1)) + (point_1(2)-point_2(2))*(point_1(2)-point_2(2)) );
+end
+
+% get a list of coordinate directions based on the robot's intended path
+% eight possible directions
+% 1) x+1, y (east)
+% 2) x+1, y+1 (northeast)
+% 3) x, y+1 (north)
+% 4) x-1, y+1 (northwest)
+% 5) x-1, y (west)
+% 6) x-1, y-1 (southwest)
+% 7) x, y-1 (south)
+% 8) x+1, y-1 (southeast) 
+function [ direction_coordinates ] = get_direction_coordinates (userStructure_list_x, userStructure_list_y, userStructure_list_size)
+    direction_coordinates = zeros(userStructure_list_size, 2);
+    for i=1:userStructure_list_size
+        direction_coordinates(i,1) = userStructure_list_x(i+1) - userStructure_list_x(i);
+        direction_coordinates(i,2) = userStructure_list_y(i+1) - userStructure_list_y(i);
+    end
+end
+
+function [ streamlined_checkpoints ] = get_checkpoints (start_point, goal, userStructure_list_x, userStructure_list_y, direction_coordinates)
+    checkpoints = zeros(length(userStructure_list_x), 2);
+    small_diff = 1e-5; % tolerance to account for floating preceision error
+    for i=1:length(direction_coordinates)-1
+        if ~(abs(direction_coordinates(i+1,1)-direction_coordinates(i,1))<small_diff && abs(direction_coordinates(i+1,2)-direction_coordinates(i,2))<small_diff)
+            checkpoints(i,1) = userStructure_list_x(i+1);
+            checkpoints(i,2) = userStructure_list_y(i+1);
+        end
+    end 
+        
+    % gets rid of ALL zero elements in a m*n matrix 
+    %streamlined_checkpoints = checkpoints;
+    streamlined_checkpoints = checkpoints(any(checkpoints,2),:);
+    
+    % add start and end points to checkpoints
+    start_point = start_point';
+    goal_point = [goal(1) goal(2)];
+    streamlined_checkpoints = [start_point; streamlined_checkpoints];
+    streamlined_checkpoints = [streamlined_checkpoints; goal_point];
 end

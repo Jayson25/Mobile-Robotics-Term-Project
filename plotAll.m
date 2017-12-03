@@ -17,7 +17,7 @@ function plotAll(model, env, userStructure)
     drawRobotGoal(modelGoal);
     
     scatter(userStructure.x, userStructure.y, 10, 'r', 'filled');
-    
+    scatter(userStructure.check_points(1,:), userStructure.check_points(2,:), 25, 'b', 'filled');
     % draw environment
     drawEnvironment(env);
     

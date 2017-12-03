@@ -42,17 +42,17 @@ function [u, userStructure] = userCtrl(model, environment, userStructure)
 %     Maybe we can combine both approaches
 
     % module that tests translation of robot 
-%     startx = userStructure.startPoint(1);
-%     endx = -5;
-%             
-%     if model.state(1) > ((endx + startx)/2.0) && model.state(1) < endx 
-%         u = [-0.1; -0.1];
-%     elseif model.state(1) >= endx
-%         u = [model.state(4)*-50; model.state(5)*-50]; 
-%     else
-%         u = [0.1; 0.1]
-%     end
-%     u
+    startx = userStructure.startPoint(1);
+    endx = 2;
+            
+    if model.state(1) > ((endx + startx)/2.0) && model.state(1) < endx 
+        u = [-0.1; -0.1];
+    elseif model.state(1) >= endx
+        u = [model.state(4)*-50; model.state(5)*-50]; 
+    else
+        u = [0.1; 0.1]
+    end
+    
     
     % module that tests turning left of robot
 %     startAngle = userStructure.startAngle;
