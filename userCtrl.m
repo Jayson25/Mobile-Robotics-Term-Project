@@ -39,9 +39,16 @@ function [u, userStructure] = userCtrl(model, environment, userStructure)
     userStructure.integAngle = userStructure.integAngle + eA(sErrA(2))*0.01;
     
     %PID constant values
-    Kp = 0.45;
+    Kp = 0.75;
     Ki = 0;
     Kd = 1;
+    
+    %size of the checkpoint list
+    sci = size(userStructure.checkpoint);
+    
+    if userStructure.ci == sci(1)
+        Kp = 0.35;
+    end
     
     %PID controller for the distance 
     output = pid(eD,Kp,Ki,Kd,timeStep,userStructure.integDist);
@@ -63,10 +70,7 @@ function [u, userStructure] = userCtrl(model, environment, userStructure)
     output = pid(eA,Kp,Ki,Kd,timeStep,userStructure.integAngle);
     
     u = [u(1)-output;u(2)+output];
-    
-    %size of the checkpoint list
-    sci = size(userStructure.checkpoint);
-    
+
     %if we reach a certain point and it is not the last checkpoint
     if eD(sErrD(2)) < 0.55 && userStructure.ci < sci(1)
        

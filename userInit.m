@@ -19,12 +19,13 @@ function userStructure = userInit(model, environment)
     
     % error counters for the PID controllers (one for dist and one for
     % angle)
-    userStructure.errorAngle = 0.0;
-    userStructure.errorDist = 0.0;
+    userStructure.errorAngle = [0.0, 0.0];
+    userStructure.errorDist = [0.0, 0.0];
     
     %index of the checkpoint
-    
     userStructure.ci = 2;
+    
+    %boolean for started value
     userStructure.started = 0;
     
     % counter for integrates
@@ -37,13 +38,9 @@ function userStructure = userInit(model, environment)
     
     % Converts the above coordinates into map friendly values
     startx = (userStructure.startPoint(1) - mapStartx) * precision;
-    starty = (userStructure.startPoint(2) - mapStarty)*precision;
+    starty = (userStructure.startPoint(2) - mapStarty) * precision;
     goalx = (userStructure.goal(1) - mapStartx) * precision;
-    goaly = (userStructure.goal(2) - mapStarty)*precision;
-    
-    % Coordinates of the beginning of the map (for display purposes)
-    adderx = mapStartx;
-    addery = mapStarty;
+    goaly = (userStructure.goal(2) - mapStarty) * precision;
     
     %generates a map with the obstacles and takes into account the robot's
     %size (radius)
@@ -106,11 +103,13 @@ function userStructure = userInit(model, environment)
         
         %if one of the distances changes (x or y), then the previous points
         %will be a checkpoint
-        if (currDistx ~= distx) || (currDisty ~= disty) || mod(add,30) == 0
+        if (currDistx ~= distx) || (currDisty ~= disty) || mod(add,10) == 0
             
             index = index+1;
             userStructure.checkpoint(index,1) = userStructure.x(i-1);
             userStructure.checkpoint(index,2) = userStructure.y(i-1);
+            
+            add = 1;
         end
         
         %change the values of the buffer for the next points
@@ -164,11 +163,11 @@ function parentList = pathFinding(sx,sy,gx,gy,sizex,sizey,map)
                 
                 %if the child is not out of range and it is not an obstacle
                 if childx > 0 && childy > 0 && childx <= sizex && childy <= sizey && map(childx,childy) ~= Inf
-                    heritage = checkShortestPath(childx,childy,parentx(index),parenty(index),parentList);
+                    child = checkShortestPath(childx,childy,parentx(index),parenty(index),parentList);
 
-                    parentList(childx,childy,1) = heritage(1);
-                    parentList(childx,childy,2) = heritage(2);
-                    parentList(childx,childy,3) = heritage(3);
+                    parentList(childx,childy,1) = child(1);
+                    parentList(childx,childy,2) = child(2);
+                    parentList(childx,childy,3) = child(3);
                     
                     %check if the child is already in the parent queue line
                     isPresent = checkItem(parentx, parenty, childx, childy);
@@ -201,7 +200,7 @@ end
 
 %compare the costs between the potential parent and the current parent (if
 %one) then assign the new parent if lower cost
-function heritage = checkShortestPath(cx,cy,px,py, parentList)
+function child = checkShortestPath(cx,cy,px,py, parentList)
     
     %if diagonal
     if cx~=px && cy~=py
@@ -211,9 +210,9 @@ function heritage = checkShortestPath(cx,cy,px,py, parentList)
     end
     
     if cost < parentList(cx,cy,3)
-       heritage = [px,py,cost];
+       child = [px,py,cost];
     else
-        heritage = [parentList(cx,cy,1),parentList(cx,cy,2),parentList(cx,cy,3)];
+        child = [parentList(cx,cy,1),parentList(cx,cy,2),parentList(cx,cy,3)];
     end
 end
 
