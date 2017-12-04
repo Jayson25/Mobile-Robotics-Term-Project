@@ -21,8 +21,8 @@ function plotAll(model, env, userStructure)
     
     %displays the path (but error when reaches the goal)
     
-    %scatter(userStructure.x, userStructure.y, 10,'red','filled');
-    %scatter(userStructure.checkpoint(:,1), userStructure.checkpoint(:,2), 10,'blue','filled');
+    line(userStructure.x, userStructure.y);
+    scatter(userStructure.checkpoint(:,1), userStructure.checkpoint(:,2), 10,'red','filled');
    
     hold off;
     axis equal;

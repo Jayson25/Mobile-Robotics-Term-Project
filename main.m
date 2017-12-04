@@ -53,9 +53,10 @@ while(1)
     end
     sceneCnt = sceneCnt + 1;
     
+    
 end
 toc;
 
-plotAll(model, environment);
+plotAll(model, environment, userStructure);
 
 
