@@ -1,3 +1,4 @@
+
 % Problem 1 - Round shaped differential drive robot navigation
 % User initialization function
 
@@ -16,26 +17,36 @@ function userStructure = userInit(model, environment)
     sizeMapx = (mapEndx-mapStartx)*precision;
     sizeMapy = (mapEndy-mapStarty)*precision;
     
-    % Coordinates of the start point and goal point
-    userStructure.startPoint = model.state(1, 1:2)';
-    goal = environment.stateGoal(1, 1:2)';
+    % error counters for the PID controllers (one for dist and one for
+    % angle)
+    userStructure.errorAngle = 0.0;
+    userStructure.errorDist = 0.0;
     
-    % initial angle of robot
-    userStructure.startAngle = model.state(3);
+    %index of the checkpoint
+    
+    userStructure.ci = 2;
+    userStructure.started = 0;
+    
+    % counter for integrates
+    userStructure.integDist = 0.0;
+    userStructure.integAngle = 0.0;
+    
+    % Coordinates of the start point and userStructure.goal point
+    userStructure.startPoint = model.state(1, 1:2)';
+    userStructure.goal = environment.stateGoal(1, 1:2)';
     
     % Converts the above coordinates into map friendly values
     startx = (userStructure.startPoint(1) - mapStartx) * precision;
     starty = (userStructure.startPoint(2) - mapStarty)*precision;
-    goalx = (goal(1) - mapStartx) * precision;
-    goaly = (goal(2) - mapStarty)*precision;
+    goalx = (userStructure.goal(1) - mapStartx) * precision;
+    goaly = (userStructure.goal(2) - mapStarty)*precision;
     
     % Coordinates of the beginning of the map (for display purposes)
     adderx = mapStartx;
     addery = mapStarty;
-        
+    
     %generates a map with the obstacles and takes into account the robot's
     %size (radius)
-    
     userStructure.cost = zeros(sizeMapx, sizeMapy, 3);
     userStructure.cost(:,:,:) = -1;
     userStructure.cost(startx, starty, 3) = 0;
@@ -54,45 +65,77 @@ function userStructure = userInit(model, environment)
        end
     end
     
-    %Make sure that the goal is not an obstacle
+    %Make sure that the userStructure.goal is not an obstacle
     userStructure.map(goalx,goaly) = 1;
     
     %Parents and costs 
     parentList = pathFinding(startx, starty, goalx, goaly,sizeMapx, sizeMapy, userStructure.map);
     
-    disp("Total cost to goal: " + parentList(goalx,goaly,3));
+    disp("Total cost to userStructure.goal: " + parentList(goalx,goaly,3));
    
-   userStructure.x(1) = parentList(goalx,goaly,1); 
-   userStructure.y(1) = parentList(goalx,goaly,2);
+    userStructure.x(1) = parentList(goalx,goaly,1); userStructure.y(1) = parentList(goalx,goaly,2);
 
-   index = 1;
-   
-   while userStructure.x(index) ~= startx || userStructure.y(index) ~= starty
+    index = 1;
+
+    while userStructure.x(index) ~= startx || userStructure.y(index) ~= starty
        userStructure.x(index+1) = parentList(userStructure.x(index),userStructure.y(index),1); 
        userStructure.y(index+1) = parentList(userStructure.x(index), userStructure.y(index),2);
-       
+
        index = index + 1;
-   end
-   
-   sizeArray = size(userStructure.y);
-   userStructure.minWeight = 0;
+    end
     
-   for i = 1:sizeArray(2)
-    userStructure.x(i) = mapStartx + userStructure.x(i)/precision;
-    userStructure.y(i) = mapStarty + userStructure.y(i)/precision;
-   end
+    %flip the order of the arrays in order to have the start point as first
+    %element
+    userStructure.x = flip(userStructure.x);
+    userStructure.y = flip(userStructure.y);
+
+    sizeArray = size(userStructure.y);
+    
+    %distance between two points
+    distx = abs(userStructure.x(2) - userStructure.x(1));
+    disty = abs(userStructure.y(2) - userStructure.y(1));
+    
+    index = 1;
+    add = 1;
+    
+    %checkpoints generation
+    for i = 3:sizeArray(2)
+        %distance of points that are now treaten
+        currDistx = abs(userStructure.x(i)-userStructure.x(i-1));
+        currDisty = abs(userStructure.y(i)-userStructure.y(i-1));
+        
+        %if one of the distances changes (x or y), then the previous points
+        %will be a checkpoint
+        if (currDistx ~= distx) || (currDisty ~= disty) || mod(add,30) == 0
+            
+            index = index+1;
+            userStructure.checkpoint(index,1) = userStructure.x(i-1);
+            userStructure.checkpoint(index,2) = userStructure.y(i-1);
+        end
+        
+        %change the values of the buffer for the next points
+        distx = currDistx;
+        disty = currDisty;
+        
+        add = add + 1;
+    end
+    
+    index = index+1;
+    
+    userStructure.checkpoint(index,1) = userStructure.x(sizeArray(2));
+    userStructure.checkpoint(index,2) = userStructure.y(sizeArray(2));
+    
+    %convert the values of the matrix into map coordinates values
+    for i = 1:sizeArray(2)
+        userStructure.x(i) = mapStartx + userStructure.x(i)/precision;
+        userStructure.y(i) = mapStarty + userStructure.y(i)/precision;
+    end
    
-   userStructure.x = flip(userStructure.x);
-   userStructure.y = flip(userStructure.y);
-   
-   userStructure.checkpoint_x = userStructure.x;
-   userStructure.checkpoint_y = userStructure.y;
-   userStructure.coordinates = get_direction_coordinates (userStructure.x, userStructure.y, length(userStructure.x)-1);
-   userStructure.check_points = get_checkpoints (userStructure.startPoint, environment.stateGoal, userStructure.x, userStructure.y, userStructure.coordinates);
-   
-   %transposing coordinates and check_points
-   userStructure.coordinates = userStructure.coordinates';
-   userStructure.check_points = userStructure.check_points';
+    %same process for the checkpoint
+    for i = 1:index
+        userStructure.checkpoint(i,1) = mapStartx + userStructure.checkpoint(i,1)/precision;
+        userStructure.checkpoint(i,2) = mapStarty + userStructure.checkpoint(i,2)/precision;
+    end
 end
 
 %Actual path finding code where a 3d matrix is generated
@@ -141,7 +184,7 @@ function parentList = pathFinding(sx,sy,gx,gy,sizex,sizey,map)
         %increment the index of the parent queue line
         index = index + 1;
     end
-end 
+end
 
 %check whether the child is present in the queue line and returns a boolean
 function bool = checkItem(MA, MB, x, y)
@@ -192,15 +235,13 @@ function isCollided = checkObstacle(coord, model, environment)
         coord_ObstacleLine_dist = point_line_segment_dist(firstPointOfObstacleLine, secondPointOfObstacleLine, coord);
         
         % 2) Determine wheter the distance is shorter than Vehicle Radious
-        if(coord_ObstacleLine_dist <= model.radius)
+        if(coord_ObstacleLine_dist <= model.radius+0.15)
             isCollided = 1;
             return;
         else
             isCollided = 0;
         end
-
     end
-
 end
 
 function [ dist ] = point_line_segment_dist( linePoint_1, linePoint_2, point )
@@ -234,43 +275,5 @@ end
 function [ dist ] = point_dist( point_1, point_2 )
 %POINT_DIST 
     dist = sqrt((point_1(1)-point_2(1))*(point_1(1)-point_2(1)) + (point_1(2)-point_2(2))*(point_1(2)-point_2(2)) );
-end
 
-% get a list of coordinate directions based on the robot's intended path
-% eight possible directions
-% 1) x+1, y (east)
-% 2) x+1, y+1 (northeast)
-% 3) x, y+1 (north)
-% 4) x-1, y+1 (northwest)
-% 5) x-1, y (west)
-% 6) x-1, y-1 (southwest)
-% 7) x, y-1 (south)
-% 8) x+1, y-1 (southeast) 
-function [ direction_coordinates ] = get_direction_coordinates (userStructure_list_x, userStructure_list_y, userStructure_list_size)
-    direction_coordinates = zeros(userStructure_list_size, 2);
-    for i=1:userStructure_list_size
-        direction_coordinates(i,1) = userStructure_list_x(i+1) - userStructure_list_x(i);
-        direction_coordinates(i,2) = userStructure_list_y(i+1) - userStructure_list_y(i);
-    end
-end
-
-function [ streamlined_checkpoints ] = get_checkpoints (start_point, goal, userStructure_list_x, userStructure_list_y, direction_coordinates)
-    checkpoints = zeros(length(userStructure_list_x), 2);
-    small_diff = 1e-5; % tolerance to account for floating preceision error
-    for i=1:length(direction_coordinates)-1
-        if ~(abs(direction_coordinates(i+1,1)-direction_coordinates(i,1))<small_diff && abs(direction_coordinates(i+1,2)-direction_coordinates(i,2))<small_diff)
-            checkpoints(i,1) = userStructure_list_x(i+1);
-            checkpoints(i,2) = userStructure_list_y(i+1);
-        end
-    end 
-        
-    % gets rid of ALL zero elements in a m*n matrix 
-    %streamlined_checkpoints = checkpoints;
-    streamlined_checkpoints = checkpoints(any(checkpoints,2),:);
-    
-    % add start and end points to checkpoints
-    start_point = start_point';
-    goal_point = [goal(1) goal(2)];
-    streamlined_checkpoints = [start_point; streamlined_checkpoints];
-    streamlined_checkpoints = [streamlined_checkpoints; goal_point];
 end
