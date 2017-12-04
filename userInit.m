@@ -135,6 +135,9 @@ function userStructure = userInit(model, environment)
         userStructure.checkpoint(i,1) = mapStartx + userStructure.checkpoint(i,1)/precision;
         userStructure.checkpoint(i,2) = mapStarty + userStructure.checkpoint(i,2)/precision;
     end
+    
+    userStructure.checkpoint(1,1) = userStructure.x(1);
+    userStructure.checkpoint(1,2) = userStructure.y(1);
 end
 
 %Actual path finding code where a 3d matrix is generated
