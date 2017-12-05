@@ -47,7 +47,7 @@ while(1)
     % Plot current situation
     % only plot 1/10 of updates, to speed up simulation
     % Change 10 to other value to speed up simulation (bigger is faster)
-    if( mod(sceneCnt,10) == 0 ) 
+    if( mod(sceneCnt,100) == 0 ) 
         plotAll(model, environment, userStructure);
         sceneCnt = 0;
     end
