@@ -47,7 +47,7 @@ function [u, userStructure] = userCtrl(model, environment, userStructure)
     sci = size(userStructure.checkpoint);
     
     if userStructure.ci == sci(1)
-        Kp = 0.35;
+        Kp = 0.3;
     end
     
     %PID controller for the distance 
@@ -72,7 +72,7 @@ function [u, userStructure] = userCtrl(model, environment, userStructure)
     u = [u(1)-output;u(2)+output];
 
     %if we reach a certain point and it is not the last checkpoint
-    if eD(sErrD(2)) < 0.55 && userStructure.ci < sci(1)
+    if eD(sErrD(2)) < 0.75 && userStructure.ci < sci(1)
        
        %reset integrates and errors
        userStructure.integDist = 0; 

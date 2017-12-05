@@ -103,7 +103,7 @@ function userStructure = userInit(model, environment)
         
         %if one of the distances changes (x or y), then the previous points
         %will be a checkpoint
-        if (currDistx ~= distx) || (currDisty ~= disty) || mod(add,10) == 0
+        if ((currDistx ~= distx) || (currDisty ~= disty) || mod(add,10) == 0 || i == sizeArray(2)-4) && i < sizeArray(2)-3
             
             index = index+1;
             userStructure.checkpoint(index,1) = userStructure.x(i-1);
@@ -119,10 +119,10 @@ function userStructure = userInit(model, environment)
         add = add + 1;
     end
     
-    index = index+1;
-    
-    userStructure.checkpoint(index,1) = userStructure.x(sizeArray(2));
-    userStructure.checkpoint(index,2) = userStructure.y(sizeArray(2));
+     index = index+1;
+     
+     userStructure.checkpoint(index,1) = userStructure.x(sizeArray(2));
+     userStructure.checkpoint(index,2) = userStructure.y(sizeArray(2));
     
     %convert the values of the matrix into map coordinates values
     for i = 1:sizeArray(2)
@@ -136,8 +136,8 @@ function userStructure = userInit(model, environment)
         userStructure.checkpoint(i,2) = mapStarty + userStructure.checkpoint(i,2)/precision;
     end
     
-    userStructure.checkpoint(1,1) = userStructure.x(1);
-    userStructure.checkpoint(1,2) = userStructure.y(1);
+     userStructure.checkpoint(1,1) = userStructure.x(1);
+     userStructure.checkpoint(1,2) = userStructure.y(1);
 end
 
 %Actual path finding code where a 3d matrix is generated
@@ -227,8 +227,6 @@ function isCollided = checkObstacle(coord, model, environment)
     for j = 1:NbOfObstacleLines
         
         currObstacleLine = environment.corner(:, j);
-        
-       % currObstacleLine
         
         firstPointOfObstacleLine = currObstacleLine(1:2, 1);
         secondPointOfObstacleLine = currObstacleLine(3:4, 1);
