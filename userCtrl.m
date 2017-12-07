@@ -47,7 +47,7 @@ function [u, userStructure] = userCtrl(model, environment, userStructure)
     sci = size(userStructure.checkpoint);
     
     if userStructure.ci == sci(1)
-        Kp = 0.3;
+        Kp = 0.35;
     end
     
     %PID controller for the distance 
